@@ -1,5 +1,4 @@
-```markdown
-# 📱 [Project Name - e.g., AnswerMee Mobile UI (Subject to change)]
+# 📱 [Project Name - AnswerMee Mobile UI (Subject to change)]
 
 Welcome to the repository! This project is a modern mobile user interface built using **React (TypeScript)**, **Vite**, and **Tailwind CSS**. 
 
