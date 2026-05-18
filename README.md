@@ -1,4 +1,4 @@
-# 📱 [Project Name - AnswerMee Mobile UI (Subject to change)]
+# Project Name - AnswerMee Mobile UI (Subject to change)
 
 Welcome to the repository! This project is a modern mobile user interface built using **React (TypeScript)**, **Vite**, and **Tailwind CSS**. 
 
@@ -6,7 +6,7 @@ Follow the guide below to get the project cloned, installed, and running on your
 
 ---
 
-## 🚀 Getting Started (Choose Option A or B)
+## Getting Started (Choose Option A or B)
 
 ### Option A: The Cloud Setup 
 If you don't want to install anything on your laptop, you can run the entire project directly in your browser using GitHub Codespaces.
@@ -17,8 +17,6 @@ If you don't want to install anything on your laptop, you can run the entire pro
    ```bash
    npm install
    npm run dev -- --host
-
-```
  5. Click the **"Open in Browser"** popup notification that appears in the bottom-right corner to see the live app.
 ### Option B: Local Setup (On Your Laptop)
 If you prefer working locally in your own VS Code editor:
@@ -39,13 +37,13 @@ If you prefer working locally in your own VS Code editor:
    
    ```
  5. Open http://localhost:3000 in your browser to view the interface.
-## 🛠️ Project Structure & Architecture
+## Project Structure & Architecture
 Here is where the important files live. Please limit your edits to the src directory:
  * 📂 **src/** -> Contains all the active frontend code, UI layouts, and assets.
-   * 📄 **src/App.tsx** -> The main entry point and structural core of our application interface.
+ * 📄 **src/App.tsx** -> The main entry point and structural core of our application interface.
  * 📄 package.json -> Lists our project dependencies (DO NOT delete or modify unless adding a package).
  * 📄 .gitignore -> Configured to keep heavy system files (like node_modules) off GitHub.
-## 🌿 Git & Collaboration Workflow
+## Git & Collaboration Workflow
 To keep our main code safe and avoid breaking each other's work, please follow this workflow when adding features:
 ### 1. Update your local machine before starting
 Always pull down the latest changes from the team before you start coding:
@@ -70,4 +68,3 @@ git push origin main
 
 ```
 *Note: If Git throws a [rejected] non-fast-forward error when pushing, it just means someone else pushed code first. Run git stash -u, then git pull origin main, then git stash pop to safely merge.*
-```
