@@ -1,297 +1,280 @@
-import { Box, Typography, Avatar, Card, CardContent, Chip, Grid, Divider, Button } from '@mui/material';
-import { School, TrendingUp, Groups, PersonAdd, EmojiEvents } from '@mui/icons-material';
-
-interface Student {
-  id: string;
-  name: string;
-  avatar: string;
-  school: string;
-  schoolLogo: string;
-  points: number;
-  answersCount: number;
-  major?: string;
-  year?: string;
-  bio?: string;
-  followers?: number;
-  following?: number;
-}
+import {
+  Box, Typography, Avatar, Card, CardContent, Grid, Chip, Button, LinearProgress
+} from '@mui/material';
+import { EmojiEvents, MenuBook, QuestionAnswer, VerifiedUser, CheckCircle } from '@mui/icons-material';
+import { ACHIEVEMENTS } from '../data/achievements';
+import type { User, Question, UserStats } from '../types';
 
 interface ProfileProps {
-  student: Student;
-  allStudents: Student[];
+  user: User;
+  questions: Question[];
+  stats: UserStats;
+  onNavigate: (page: string) => void;
 }
 
-export function Profile({ student, allStudents }: ProfileProps) {
-  const schoolmates = allStudents.filter(s => s.school === student.school && s.id !== student.id);
-  const suggestedFriends = schoolmates.slice(0, 6);
+function initials(name: string) {
+  return name.split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+}
+
+const cardSx = {
+  bgcolor: '#FFF8E7',
+  border: '3px solid #0d2818',
+  borderRadius: 2,
+  boxShadow: '6px 6px 0px #c4b998',
+  mb: 3,
+};
+
+export function Profile({ user, questions, stats, onNavigate }: ProfileProps) {
+  const userQuestions = questions.filter((q) => q.authorId === user.id);
+  const userAnswers = questions.flatMap((q) => q.answers.filter((a) => a.authorId === user.id));
+
+  const earnedAchievements = ACHIEVEMENTS.filter((a) => a.check(stats));
+  const previewAchievements = earnedAchievements.slice(0, 6);
+  const lockedCount = ACHIEVEMENTS.length - earnedAchievements.length;
+  const progressPct = (earnedAchievements.length / ACHIEVEMENTS.length) * 100;
+
+  const isVerified = !!(user.school && user.field);
 
   return (
     <Box>
-      <Card sx={{
-        mb: 4,
-        bgcolor: '#FFF8E7',
-        border: '3px solid #0d2818',
-        borderRadius: 2,
-        boxShadow: '6px 6px 0px #c4b998',
-      }}>
+      {/* Profile card */}
+      <Card sx={cardSx}>
         <CardContent sx={{ p: 4 }}>
-          <Box display="flex" alignItems="flex-start" gap={3}>
+          <Box display="flex" alignItems="flex-start" gap={3} flexWrap="wrap">
             <Avatar
-              src={student.avatar}
               sx={{
-                width: 120,
-                height: 120,
-                bgcolor: '#0d2818',
-                color: '#FFF8E7',
-                fontSize: 48,
-                fontWeight: 700,
+                width: 110, height: 110,
+                bgcolor: '#0d2818', color: '#FFF8E7',
+                fontSize: 40, fontWeight: 700,
                 fontFamily: '"Playfair Display", serif',
                 border: '4px solid #ffd600',
                 boxShadow: '0 4px 12px rgba(13, 40, 24, 0.2)',
+                flexShrink: 0,
               }}
             >
-              {student.name[0]}
+              {initials(user.name)}
             </Avatar>
-            <Box flex={1}>
-              <Typography variant="h3" fontWeight={700} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif', mb: 1 }}>
-                {student.name}
-              </Typography>
-              <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <Typography sx={{ fontSize: 24 }}>{student.schoolLogo}</Typography>
-                <Typography variant="h6" sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif', fontStyle: 'italic' }}>
-                  {student.school}
+
+            <Box flex={1} minWidth={200}>
+              <Box display="flex" alignItems="center" gap={1} mb={0.5} flexWrap="wrap">
+                <Typography variant="h3" fontWeight={700} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif' }}>
+                  {user.name}
                 </Typography>
+                {isVerified && (
+                  <VerifiedUser sx={{ color: '#2d8a2d', fontSize: 24 }} titleAccess="Verified Scholar" />
+                )}
               </Box>
-              <Box display="flex" gap={2} mb={2}>
-                <Chip
-                  label={student.major}
-                  sx={{
-                    bgcolor: '#0d2818',
-                    color: '#FFF8E7',
-                    fontFamily: '"Crimson Text", serif',
-                    fontWeight: 600,
-                  }}
-                />
-                <Chip
-                  label={student.year}
-                  sx={{
-                    bgcolor: '#ffd600',
-                    color: '#0d2818',
-                    fontFamily: '"Crimson Text", serif',
-                    fontWeight: 600,
-                    border: '2px solid #0d2818',
-                  }}
-                />
-              </Box>
-              <Typography variant="body1" sx={{ color: '#2d3e2d', fontFamily: '"Crimson Text", serif', lineHeight: 1.7, mb: 3 }}>
-                {student.bio}
+
+              {(user.school || user.field) && (
+                <Typography variant="h6" sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif', fontStyle: 'italic', mb: 1 }}>
+                  {[user.school, user.field].filter(Boolean).join(' · ')}
+                </Typography>
+              )}
+
+              <Typography variant="caption" sx={{ color: '#8a9b8a', fontFamily: '"Crimson Text", serif' }}>
+                {user.email}
               </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={4}>
-                  <Box textAlign="center" p={2} bgcolor="#f5eed9" borderRadius={1} border="2px solid #c4b998">
-                    <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={0.5}>
-                      <EmojiEvents sx={{ color: '#ffd600', fontSize: 28 }} />
-                      <Typography variant="h4" fontWeight={700} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif' }}>
-                        {student.points}
-                      </Typography>
-                    </Box>
-                    <Typography variant="caption" sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif', textTransform: 'uppercase', letterSpacing: 1 }}>
-                      Points
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={4}>
-                  <Box textAlign="center" p={2} bgcolor="#f5eed9" borderRadius={1} border="2px solid #c4b998">
-                    <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={0.5}>
-                      <Groups sx={{ color: '#0d2818', fontSize: 28 }} />
-                      <Typography variant="h4" fontWeight={700} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif' }}>
-                        {student.followers}
-                      </Typography>
-                    </Box>
-                    <Typography variant="caption" sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif', textTransform: 'uppercase', letterSpacing: 1 }}>
-                      Followers
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={4}>
-                  <Box textAlign="center" p={2} bgcolor="#f5eed9" borderRadius={1} border="2px solid #c4b998">
-                    <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={0.5}>
-                      <TrendingUp sx={{ color: '#0d2818', fontSize: 28 }} />
-                      <Typography variant="h4" fontWeight={700} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif' }}>
-                        {student.answersCount}
-                      </Typography>
-                    </Box>
-                    <Typography variant="caption" sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif', textTransform: 'uppercase', letterSpacing: 1 }}>
-                      Answers
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
+
+              {user.bio && (
+                <Typography variant="body1" sx={{ color: '#2d3e2d', fontFamily: '"Crimson Text", serif', lineHeight: 1.7, mt: 2 }}>
+                  {user.bio}
+                </Typography>
+              )}
+
+              <Box display="flex" gap={1} mt={2} flexWrap="wrap">
+                {isVerified && (
+                  <Chip
+                    icon={<CheckCircle sx={{ fontSize: 16 }} />}
+                    label="Verified Scholar"
+                    size="small"
+                    sx={{ bgcolor: '#2d8a2d', color: '#fff', fontFamily: '"Crimson Text", serif', fontWeight: 600 }}
+                  />
+                )}
+                {user.isFounder && (
+                  <Chip
+                    label="🔑 Founding Member"
+                    size="small"
+                    sx={{ bgcolor: '#0d2818', color: '#ffd600', fontFamily: '"Crimson Text", serif', fontWeight: 600, border: '2px solid #ffd600' }}
+                  />
+                )}
+              </Box>
             </Box>
           </Box>
-        </CardContent>
-      </Card>
 
-      <Card sx={{
-        mb: 4,
-        bgcolor: '#FFF8E7',
-        border: '3px solid #0d2818',
-        borderRadius: 2,
-        boxShadow: '6px 6px 0px #c4b998',
-      }}>
-        <CardContent sx={{ p: 3 }}>
-          <Box display="flex" alignItems="center" gap={1.5} mb={3}>
-            <School sx={{ color: '#ffd600', fontSize: 32 }} />
-            <Typography variant="h5" fontWeight={700} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif' }}>
-              Find Classmates
-            </Typography>
-          </Box>
-          <Typography variant="body2" sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif', fontStyle: 'italic', mb: 3 }}>
-            Connect with fellow scholars from {student.school}
-          </Typography>
-          <Grid container spacing={2}>
-            {suggestedFriends.map((friend) => (
-              <Grid item xs={12} sm={6} md={4} key={friend.id}>
-                <Card sx={{
-                  bgcolor: '#f5eed9',
-                  border: '2px solid #c4b998',
-                  borderRadius: 1,
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    border: '2px solid #0d2818',
-                    boxShadow: '3px 3px 0px #c4b998',
-                    transform: 'translate(-1px, -1px)',
-                  },
-                }}>
-                  <CardContent sx={{ p: 2 }}>
-                    <Box display="flex" alignItems="center" mb={2}>
-                      <Avatar
-                        src={friend.avatar}
-                        sx={{
-                          width: 48,
-                          height: 48,
-                          mr: 1.5,
-                          bgcolor: '#0d2818',
-                          color: '#FFF8E7',
-                          fontFamily: '"Crimson Text", serif',
-                          fontSize: 20,
-                          fontWeight: 600,
-                        }}
-                      >
-                        {friend.name[0]}
-                      </Avatar>
-                      <Box flex={1}>
-                        <Typography variant="body1" fontWeight={600} sx={{ color: '#0d2818', fontFamily: '"Crimson Text", serif' }}>
-                          {friend.name}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: '#5a6b5a' }}>
-                          {friend.major} • {friend.year}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                      <Box>
-                        <Typography variant="caption" sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif' }}>
-                          {friend.points} points
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif' }}>
-                          {friend.answersCount} answers
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<PersonAdd />}
-                      sx={{
-                        borderColor: '#0d2818',
-                        borderWidth: 2,
-                        color: '#0d2818',
-                        fontFamily: '"Crimson Text", serif',
-                        fontWeight: 600,
-                        '&:hover': {
-                          borderWidth: 2,
-                          borderColor: '#0d2818',
-                          bgcolor: '#FFF8E7',
-                        },
-                      }}
-                    >
-                      Follow
-                    </Button>
-                  </CardContent>
-                </Card>
+          {/* Stats grid */}
+          <Grid container spacing={2} mt={2}>
+            {[
+              { label: 'Points', value: user.points, icon: <EmojiEvents sx={{ color: '#ffd600', fontSize: 26 }} /> },
+              { label: 'Questions', value: userQuestions.length, icon: <QuestionAnswer sx={{ color: '#0d2818', fontSize: 26 }} /> },
+              { label: 'Answers', value: userAnswers.length, icon: <MenuBook sx={{ color: '#0d2818', fontSize: 26 }} /> },
+              { label: 'Achievements', value: earnedAchievements.length, icon: <EmojiEvents sx={{ color: '#0d2818', fontSize: 26 }} /> },
+            ].map(({ label, value, icon }) => (
+              <Grid item xs={6} sm={3} key={label}>
+                <Box textAlign="center" p={2} bgcolor="#f5eed9" borderRadius={1} border="2px solid #c4b998">
+                  <Box display="flex" alignItems="center" justifyContent="center" gap={0.5} mb={0.5}>
+                    {icon}
+                    <Typography variant="h4" fontWeight={700} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif' }}>
+                      {value}
+                    </Typography>
+                  </Box>
+                  <Typography variant="caption" sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif', textTransform: 'uppercase', letterSpacing: 1 }}>
+                    {label}
+                  </Typography>
+                </Box>
               </Grid>
             ))}
           </Grid>
         </CardContent>
       </Card>
 
-      <Card sx={{
-        bgcolor: '#FFF8E7',
-        border: '3px solid #0d2818',
-        borderRadius: 2,
-        boxShadow: '6px 6px 0px #c4b998',
-      }}>
+      {/* Achievements preview */}
+      <Card sx={cardSx}>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="h5" fontWeight={700} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif', mb: 3 }}>
-            Academic Achievements
-          </Typography>
-          <Box display="flex" flexDirection="column" gap={2}>
-            <Box display="flex" alignItems="center" p={2} bgcolor="#f5eed9" borderRadius={1} border="2px solid #c4b998">
-              <Box
-                sx={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: '50%',
-                  bgcolor: '#ffd600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mr: 2,
-                  border: '3px solid #0d2818',
-                }}
-              >
-                <Typography sx={{ fontSize: 24 }}>🏆</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body1" fontWeight={600} sx={{ color: '#0d2818', fontFamily: '"Crimson Text", serif' }}>
-                  Top Contributor
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#5a6b5a', fontStyle: 'italic' }}>
-                  Awarded for exceptional contributions to the academic community
-                </Typography>
-              </Box>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+            <Box display="flex" alignItems="center" gap={1.5}>
+              <EmojiEvents sx={{ color: '#ffd600', fontSize: 30 }} />
+              <Typography variant="h5" fontWeight={700} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif' }}>
+                Achievements
+              </Typography>
             </Box>
-            <Box display="flex" alignItems="center" p={2} bgcolor="#f5eed9" borderRadius={1} border="2px solid #c4b998">
-              <Box
-                sx={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: '50%',
-                  bgcolor: '#c4b998',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mr: 2,
-                  border: '3px solid #0d2818',
-                }}
-              >
-                <Typography sx={{ fontSize: 24 }}>📖</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body1" fontWeight={600} sx={{ color: '#0d2818', fontFamily: '"Crimson Text", serif' }}>
-                  Scholar
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#5a6b5a', fontStyle: 'italic' }}>
-                  Recognized for consistently helpful and insightful responses
-                </Typography>
-              </Box>
-            </Box>
+            <Button
+              size="small"
+              onClick={() => onNavigate('achievements')}
+              sx={{
+                color: '#0d2818', fontFamily: '"Crimson Text", serif', fontWeight: 600,
+                border: '2px solid #0d2818',
+                '&:hover': { bgcolor: '#f5eed9' },
+              }}
+            >
+              View all →
+            </Button>
           </Box>
+
+          {/* Progress bar */}
+          <Box mb={3}>
+            <Box display="flex" justifyContent="space-between" mb={0.5}>
+              <Typography variant="caption" sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif' }}>
+                {earnedAchievements.length} earned · {lockedCount} remaining
+              </Typography>
+              <Typography variant="caption" fontWeight={700} sx={{ color: '#0d2818', fontFamily: '"Crimson Text", serif' }}>
+                {Math.round(progressPct)}%
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={progressPct}
+              sx={{
+                height: 8, borderRadius: 4,
+                bgcolor: '#d8d0bc',
+                '& .MuiLinearProgress-bar': { bgcolor: '#ffd600', borderRadius: 4 },
+              }}
+            />
+          </Box>
+
+          {earnedAchievements.length === 0 ? (
+            <Box textAlign="center" py={3}>
+              <Typography sx={{ color: '#5a6b5a', fontFamily: '"Crimson Text", serif', fontStyle: 'italic' }}>
+                No achievements yet. Start asking questions and contributing answers!
+              </Typography>
+            </Box>
+          ) : (
+            <Box display="flex" flexWrap="wrap" gap={1.5}>
+              {previewAchievements.map((a) => (
+                <Box
+                  key={a.id}
+                  title={`${a.name} — ${a.description}`}
+                  sx={{
+                    width: 56, height: 56,
+                    borderRadius: '50%',
+                    bgcolor: '#ffd600',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 26,
+                    border: '3px solid #0d2818',
+                    boxShadow: '2px 2px 0px #c4b998',
+                    cursor: 'default',
+                    transition: 'transform 0.2s',
+                    '&:hover': { transform: 'scale(1.1)' },
+                  }}
+                >
+                  {a.icon}
+                </Box>
+              ))}
+              {earnedAchievements.length > 6 && (
+                <Box
+                  onClick={() => onNavigate('achievements')}
+                  sx={{
+                    width: 56, height: 56, borderRadius: '50%',
+                    bgcolor: '#0d2818',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: '3px solid #ffd600',
+                    cursor: 'pointer',
+                    '&:hover': { bgcolor: '#1b4d1b' },
+                  }}
+                >
+                  <Typography variant="caption" fontWeight={700} sx={{ color: '#ffd600', fontFamily: '"Crimson Text", serif', fontSize: '0.75rem' }}>
+                    +{earnedAchievements.length - 6}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          )}
         </CardContent>
       </Card>
+
+      {/* Activity columns */}
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Card sx={{ ...cardSx, mb: 0 }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h5" fontWeight={700} mb={2} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif' }}>
+                Your Questions
+              </Typography>
+              {userQuestions.length === 0 ? (
+                <Typography variant="body2" sx={{ color: '#8a9b8a', fontStyle: 'italic', fontFamily: '"Crimson Text", serif' }}>
+                  You have not asked a question yet.
+                </Typography>
+              ) : (
+                userQuestions.slice(0, 5).map((q) => (
+                  <Box key={q.id} mb={1.5} p={1.5} bgcolor="#f5eed9" borderRadius={1} border="1px solid #c4b998">
+                    <Typography variant="body2" fontWeight={600} sx={{ color: '#0d2818', fontFamily: '"Crimson Text", serif' }}>
+                      {q.title}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#5a6b5a' }}>
+                      {q.subject} · {q.createdAt}
+                    </Typography>
+                  </Box>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card sx={{ ...cardSx, mb: 0 }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h5" fontWeight={700} mb={2} sx={{ color: '#0d2818', fontFamily: '"Playfair Display", serif' }}>
+                Your Answers
+              </Typography>
+              {userAnswers.length === 0 ? (
+                <Typography variant="body2" sx={{ color: '#8a9b8a', fontStyle: 'italic', fontFamily: '"Crimson Text", serif' }}>
+                  You have not answered a question yet.
+                </Typography>
+              ) : (
+                userAnswers.slice(0, 5).map((a) => (
+                  <Box key={a.id} mb={1.5} p={1.5} bgcolor="#f5eed9" borderRadius={1} border="1px solid #c4b998">
+                    <Typography variant="body2" sx={{ color: '#2d3e2d', fontFamily: '"Crimson Text", serif', lineHeight: 1.5 }}>
+                      {a.body.length > 100 ? `${a.body.slice(0, 100)}…` : a.body}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#5a6b5a' }}>
+                      {a.likes} likes · {a.createdAt}
+                    </Typography>
+                  </Box>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
     </Box>
   );
 }
