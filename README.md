@@ -1,5 +1,4 @@
-# 📱 [Project Name - AnswerMee Mobile UI (subject to change)]
-
+# 📱 [Project Name - ACADEMIA]
 Welcome to the repository! This project is a modern mobile user interface built using **React (TypeScript)**, **Vite**, and **Tailwind CSS**.
 
 Follow the guide below to get the project cloned, installed, and running on your local machine or in the cloud.
